@@ -1,11 +1,11 @@
 import os
 import time
-import tracemalloc
 import tsplib95
+import tracemalloc
 
-from python_tsp.distances import tsplib_distance_matrix
-from python_tsp.exact import solve_tsp_dynamic_programming
 from python_tsp.heuristics import solve_tsp_simulated_annealing
+from python_tsp.exact import solve_tsp_dynamic_programming
+from python_tsp.distances import tsplib_distance_matrix
 from python_tsp.heuristics import solve_tsp_local_search
 
 from ortools.constraint_solver import routing_enums_pb2
@@ -13,31 +13,34 @@ from ortools.constraint_solver import pywrapcp
 
 from randomized_tsp.tsp import tsp
 
+import rheeders
+
 # tsp instances dimensions (0 for undefined)
-min_instance_dimension = 500
-max_instance_dimension = 10000
-max_instance_quantity = 10
+min_instance_dimension = 0
+max_instance_dimension = 15
+max_instance_quantity = 1
 
 print_results_for_each_instance = False
 
 # algorithms to run
 python_tsp_dynamic_programming = False
-python_tsp_simulated_annealing = True
-python_tsp_local_search = True
-python_tsp_dynamic_programming_local_search = True
-python_tsp_simulated_annealing_local_search = True
-python_tsp_dynamic_programming_local_search_ps3 = True
-python_tsp_simulated_annealing_local_search_ps3 = True
+python_tsp_simulated_annealing = False
+python_tsp_local_search = False
+python_tsp_dynamic_programming_local_search = False
+python_tsp_simulated_annealing_local_search = False
+python_tsp_dynamic_programming_local_search_ps3 = False
+python_tsp_simulated_annealing_local_search_ps3 = False
 
-ortools_path_cheapest_arc = True
-ortools_christofides = True
-ortools_automatic_strategy = True
-ortools_clarke_and_wright = True
-ortools_wren_and_holliday = True
+ortools_path_cheapest_arc = False
+ortools_christofides = False
+ortools_automatic_strategy = False
+ortools_clarke_and_wright = False
+ortools_wren_and_holliday = False
 
-randomized_tsp_genetic_algorithm = True
-randomized_tsp_ant_colony = True
+randomized_tsp_genetic_algorithm = False
+randomized_tsp_ant_colony = False
 
+rheeders_algorithm = True
 
 path = 'datasets/tsp/'
 extension = '.tsp'
@@ -75,7 +78,6 @@ def run_algorithm(algorithm):
                 routing_enums_pb2.FirstSolutionStrategy.SWEEP)
 
     return routing.SolveWithParameters(search_parameters).ObjectiveValue()
-
 
 tspinstances = []
 problems = []
@@ -139,8 +141,12 @@ ant_distance_total = 0
 genetic_time_total = 0
 genetic_memory_total = 0
 genetic_distance_total = 0
+rheeders_time_total = 0
+rheeders_memory_total = 0
+rheeders_distance_total = 0
 
 for problem in problems:
+
     if print_results_for_each_instance == True:
         print('\nResults for: ' + problem.name + '\n')
 
@@ -356,6 +362,22 @@ for problem in problems:
     if print_results_for_each_instance == True:
         print()
 
+    if rheeders_algorithm == True:
+        tracemalloc.start()
+        start = time.time()
+        cost = rheeders.algorithm(distance_matrix)
+        end = time.time()
+        memory = tracemalloc.get_traced_memory()[1]/1000000
+        tracemalloc.stop()
+        rheeders_time_total += end - start
+        rheeders_memory_total += memory
+        rheeders_distance_total += cost
+        if print_results_for_each_instance == True:
+            print('Rheeders Algorithm:\t' + str(cost) + '\t' + str(round(end - start, 4)) + ' Sec\t' + str(round(memory, 4)) + ' MB')
+
+    if print_results_for_each_instance == True:
+        print()
+
 print('\nResult Totals:\n')
 
 if python_tsp_local_search == True:
@@ -407,5 +429,10 @@ if randomized_tsp_ant_colony == True:
 
 if randomized_tsp_genetic_algorithm == True:
     print('Genetic Algorithm:\t' + str(genetic_distance_total) + '\t' + str(round(genetic_time_total, 4)) + ' Sec\t' + str(round(genetic_memory_total, 4)) + ' MB')
+
+print()
+
+if rheeders_algorithm == True:
+    print('Rheeders Algorithm:\t' + str(rheeders_distance_total) + '\t' + str(round(rheeders_time_total, 4)) + ' Sec\t' + str(round(rheeders_memory_total, 4)) + ' MB')
 
 print()
