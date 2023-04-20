@@ -57,7 +57,6 @@ print(problem.is_complete()) #A complete graph is a graph in which each pair of 
 print(problem.is_symmetric())
 
 opt = tsplib95.load('datasets/tsp/a280.opt.tour')
-print(len(opt.tours[0]))
 print(problem.trace_tours(opt.tours))
 
 distance_matrix = tsplib_distance_matrix('datasets/tsp/a280.tsp')
